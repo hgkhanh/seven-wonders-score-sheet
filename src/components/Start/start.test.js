@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Scoresheet from './scoresheet';
+import Start from './Start';
 
 it('renders without crashing', () => {
     const div = document.createElement('div');
-    ReactDOM.render(<Scoresheet />, div);
+    ReactDOM.render(<Start />, div);
     ReactDOM.unmountComponentAtNode(div);
 });

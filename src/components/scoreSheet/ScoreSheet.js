@@ -1,8 +1,11 @@
-import React, { useReducer, useState, useEffect } from 'react';
-import './ScoreSheet.scss';
+import React, { useContext, useReducer, useState, useEffect } from 'react';
+import './scoresheet.scss';
 import Player from './Player';
+import 'firebase/firestore';
+import { FirebaseContext } from '../../utils/firebase';
 
-const ScoreSheet = () => {
+const Scoresheet = () => {
+    const firebase = useContext(FirebaseContext);
     const headers = [
         {
             name: 'military',
@@ -45,12 +48,6 @@ const ScoreSheet = () => {
             color: '#33b1ff'
         }
     ];
-    // const players = [
-    //   {
-    //     name: 'player 1',
-    //     points: [1, 3]
-    //   }
-    // ];
 
     const blankPlayer = {
         name: '',
@@ -83,7 +80,6 @@ const ScoreSheet = () => {
     const [players, dispatch] = useReducer(playersReducer, [{ ...blankPlayer }]);
 
 
-
     const addPlayer = () => {
         dispatch({ type: 'addPlayer' });
     };
@@ -105,22 +101,56 @@ const ScoreSheet = () => {
         );
     }
 
-    // useEffect(() => {
-    //   // a condition may be added in case it shouldn't be executed every time
-    //   console.log(players);
-    // }, [players]);
+    /**
+     * Firestore get games from'game' collection
+     */
+    const [gameList, setGameList] = useState(null);
+    useEffect(() => {
+        const db = firebase.firestore();
+        const collectionRef = db.collection('game');
+        collectionRef.get().then(snapshot => {
+            if (!snapshot) {
+                setGameList(currentValue => [])
+            } else {
+                let games = [];
+                snapshot.forEach(game => {
+                    console.log(game);
+                    console.log();
+                    games.push({key: game.id, ...game.data()})
+                });
+                console.log(games);
+                setGameList(currentValue => games)
+            }
+        }).catch(error => {
+            // Handle the error
+        })
+    }, []);
+
+    let gameListToDisplay;
+    if (gameList === null) {
+        gameListToDisplay = (<li>Loading games...</li>)
+    } else if (gameList.length === 0) {
+        gameListToDisplay = (<li>No games found</li>)
+    } else {
+        gameListToDisplay = gameList.map(item => {
+            return (<li key={item.id}>{JSON.stringify(item)}</li>)
+        })
+    }
+
 
     const renderPlayer = (player, index) => {
         return (
-            <Player index={index} name={player.name}
+            <Player key={`${player.name} ${index}`} index={index} name={player.name}
                 points={player.points} headers={headers}
                 dispatch={dispatch} />
         )
     }
 
+
     return (
         <div className="scoreSheet">
             {/* <h1>scoreSheet</h1> */}
+            {gameListToDisplay}
             <table>
                 <tbody>
                     {renderHeaders(Object.values(headers))}
@@ -132,4 +162,4 @@ const ScoreSheet = () => {
     );
 };
 
-export default ScoreSheet;
+export default Scoresheet;
