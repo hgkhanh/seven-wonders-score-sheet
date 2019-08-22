@@ -5,7 +5,7 @@ const Player = (props) => {
     let {
         index,
         name,
-        points,
+        score,
         headers,
         dispatch
     } = props;
@@ -14,10 +14,10 @@ const Player = (props) => {
 
     const pointCells = Object.values(headers).map((column, columnIndex) => {
         let point = '';
-        if (points[columnIndex]) {
-            point = points[columnIndex]
+        if (score[columnIndex]) {
+            point = score[columnIndex]
         }
-        totalPoint += point;
+        totalPoint += parseInt(point);
         return (
             <td className="inputCell" key={`player-${index}-${columnIndex}`}>
                 <input type="number" value={point} onChange={event => {

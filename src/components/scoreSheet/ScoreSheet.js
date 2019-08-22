@@ -48,7 +48,7 @@ const Scoresheet = () => {
             color: '#33b1ff'
         }
     ];
-
+    const gameId = 'iXRn0QvcMD5rxIk9bxcX';
     const blankPlayer = {
         name: '',
         points: []
@@ -58,9 +58,17 @@ const Scoresheet = () => {
         let newPlayersState;
         switch (action.type) {
             case 'setPoints':
-                newPlayersState = [...playersState];
-                newPlayersState[action.playerNumber].points[action.column] = action.point;
-                return newPlayersState;
+                // Set a single point field
+                if (action.playerNumber) {
+                    console.log('Set a single point field');
+                    newPlayersState = [...playersState];
+                    newPlayersState[action.playerNumber].points[action.column] = action.point;
+                    return newPlayersState;
+                } else {
+                    // Get all player points from Firebase query
+                    console.log('Get all player points from Firebase query');
+                    return action.players;
+                }
             case 'addPlayer':
                 return [...playersState, { ...blankPlayer }];
             case 'setName':
@@ -77,7 +85,7 @@ const Scoresheet = () => {
         }
     };
 
-    const [players, dispatch] = useReducer(playersReducer, [{ ...blankPlayer }]);
+    const [players, dispatch] = useReducer(playersReducer, []);
 
 
     const addPlayer = () => {
@@ -104,44 +112,29 @@ const Scoresheet = () => {
     /**
      * Firestore get games from'game' collection
      */
-    const [gameList, setGameList] = useState(null);
     useEffect(() => {
         const db = firebase.firestore();
-        const collectionRef = db.collection('game');
-        collectionRef.get().then(snapshot => {
-            if (!snapshot) {
-                setGameList(currentValue => [])
-            } else {
-                let games = [];
-                snapshot.forEach(game => {
-                    console.log(game);
-                    console.log();
-                    games.push({key: game.id, ...game.data()})
-                });
-                console.log(games);
-                setGameList(currentValue => games)
+        const documentRef = db.collection('game').doc(gameId);
+        documentRef.get().then(snapshot => {
+            if (snapshot) {
+                console.log(snapshot);
+                console.log(snapshot.data().players);
+                dispatch(
+                    {
+                        type: 'setPoints',
+                        players: snapshot.data().players
+                    }
+                )
             }
         }).catch(error => {
             // Handle the error
         })
     }, []);
 
-    let gameListToDisplay;
-    if (gameList === null) {
-        gameListToDisplay = (<li>Loading games...</li>)
-    } else if (gameList.length === 0) {
-        gameListToDisplay = (<li>No games found</li>)
-    } else {
-        gameListToDisplay = gameList.map(item => {
-            return (<li key={item.id}>{JSON.stringify(item)}</li>)
-        })
-    }
-
-
     const renderPlayer = (player, index) => {
         return (
             <Player key={`${player.name} ${index}`} index={index} name={player.name}
-                points={player.points} headers={headers}
+                score={player.score} headers={headers}
                 dispatch={dispatch} />
         )
     }
@@ -149,8 +142,7 @@ const Scoresheet = () => {
 
     return (
         <div className="scoreSheet">
-            {/* <h1>scoreSheet</h1> */}
-            {gameListToDisplay}
+            <h1>Score</h1>
             <table>
                 <tbody>
                     {renderHeaders(Object.values(headers))}
