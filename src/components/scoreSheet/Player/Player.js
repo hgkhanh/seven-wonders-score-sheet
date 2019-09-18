@@ -11,29 +11,16 @@ const Player = (props) => {
     } = props;
     let totalPoint = 0;
 
-
-    const pointCells = Object.values(header).map((column, columnIndex) => {
-        let point = '';
-        if (score[columnIndex]) {
-            point = score[columnIndex]
-        }
-        totalPoint += parseInt(point);
-        return (
-            <td className="inputCell" key={`player-${index}-${columnIndex}`}>
-                <input type="number" value={point} onChange={event => {
-                    dispatch(
-                        {
-                            type: 'setPoints',
-                            playerNumber: index,
-                            column: columnIndex,
-                            point: parseInt(event.target.value)
-                        }
-                    );
-                }} />
-            </td>
+    const handlePointChange = (event, columnIndex) => {
+        dispatch(
+            {
+                type: 'setPoints',
+                playerNumber: index,
+                column: columnIndex,
+                point: event.target.value === '' ? 0 : parseInt(event.target.value)
+            }
         );
-    }, this);
-
+    }
     const handleNameChange = (event) => {
         dispatch(
             {
@@ -53,7 +40,18 @@ const Player = (props) => {
         );
     }
 
-
+    const pointCells = Object.values(header).map((column, columnIndex) => {
+        let point = '';
+        if (score[columnIndex]) {
+            point = score[columnIndex]
+        }
+        totalPoint += point === '' ? 0 : parseInt(point);
+        return (
+            <td className="inputCell" key={`player-${index}-${columnIndex}`}>
+                <input type="number" value={point} onChange={(event) => handlePointChange(event, columnIndex)} />
+            </td>
+        );
+    }, this);
 
     return (
         <tr key={`player-${index}`}>

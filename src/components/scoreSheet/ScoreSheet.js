@@ -21,7 +21,7 @@ const Scoresheet = () => {
                 if (action.playerNumber) {
                     console.log('Set a single point field');
                     newPlayersState = [...playersState];
-                    newPlayersState[action.playerNumber].points[action.column] = action.point;
+                    newPlayersState[action.playerNumber].score[action.column] = action.point;
                     return newPlayersState;
                 } else {
                     // Get all player points from Firebase query
@@ -44,11 +44,34 @@ const Scoresheet = () => {
         }
     };
 
+    /**
+     * Main app object
+     * An array of players
+     * Each player object hold score of the individual
+     */
     const [players, dispatch] = useReducer(playersReducer, []);
-
 
     const addPlayer = () => {
         dispatch({ type: 'addPlayer' });
+    };
+
+    const saveScore = () => {
+        const db = firebase.firestore();
+        const documentRef = db.collection('game').doc(gameId);
+        documentRef.set(
+            {
+                players: players
+            },
+            {
+                merge: true
+            }
+        )
+        .then(function() {
+            console.log("Score successfully saved!");
+        })
+        .catch(error => {
+            console.log(error);
+        });
     };
 
     const renderHeader = (list) => {
@@ -86,8 +109,8 @@ const Scoresheet = () => {
                 )
             }
         }).catch(error => {
-            // Handle the error
-        })
+            console.log(error);
+        });
     }, []);
 
     const renderPlayer = (player, index) => {
@@ -109,6 +132,7 @@ const Scoresheet = () => {
                 </tbody>
             </table>
             <button onClick={addPlayer}>Add Player</button>
+            <button onClick={saveScore}>Save score</button>
         </div>
     );
 };
