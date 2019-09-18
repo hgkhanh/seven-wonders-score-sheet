@@ -6,13 +6,13 @@ const Player = (props) => {
         index,
         name,
         score,
-        headers,
+        header,
         dispatch
     } = props;
     let totalPoint = 0;
 
 
-    const pointCells = Object.values(headers).map((column, columnIndex) => {
+    const pointCells = Object.values(header).map((column, columnIndex) => {
         let point = '';
         if (score[columnIndex]) {
             point = score[columnIndex]

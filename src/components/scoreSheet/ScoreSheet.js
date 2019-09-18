@@ -1,57 +1,16 @@
-import React, { useContext, useReducer, useState, useEffect } from 'react';
+import React, { useContext, useReducer, useEffect } from 'react';
 import './scoresheet.scss';
 import Player from './Player';
 import 'firebase/firestore';
 import { FirebaseContext } from '../../utils/firebase';
+import Header from '../../config/header';
 
 const Scoresheet = () => {
     const firebase = useContext(FirebaseContext);
-    const headers = [
-        {
-            name: 'military',
-            color: '#a83232'
-        },
-        {
-            name: 'coin',
-            color: '#a89832'
-        },
-        {
-            name: 'wonders',
-            color: '#806821'
-        },
-        {
-            name: 'culture',
-            color: '#245e9c'
-        },
-        {
-            name: 'trading',
-            color: '#cfca42'
-        },
-        {
-            name: 'guild',
-            color: '#5d29d6'
-        },
-        {
-            name: 'science',
-            color: '#308a00'
-        },
-        {
-            name: 'leader',
-            color: '#ebebeb'
-        },
-        {
-            name: 'city',
-            color: '#000'
-        },
-        {
-            name: 'armanda',
-            color: '#33b1ff'
-        }
-    ];
     const gameId = 'iXRn0QvcMD5rxIk9bxcX';
     const blankPlayer = {
         name: '',
-        points: []
+        score: []
     };
 
     const playersReducer = (playersState, action) => {
@@ -92,7 +51,7 @@ const Scoresheet = () => {
         dispatch({ type: 'addPlayer' });
     };
 
-    const renderHeaders = (list) => {
+    const renderHeader = (list) => {
         const headerHTML = list.map((item, index) => {
             const style = {
                 backgroundColor: item.color,
@@ -134,7 +93,7 @@ const Scoresheet = () => {
     const renderPlayer = (player, index) => {
         return (
             <Player key={`${player.name} ${index}`} index={index} name={player.name}
-                score={player.score} headers={headers}
+                score={player.score} header={Header}
                 dispatch={dispatch} />
         )
     }
@@ -145,7 +104,7 @@ const Scoresheet = () => {
             <h1>Score</h1>
             <table>
                 <tbody>
-                    {renderHeaders(Object.values(headers))}
+                    {renderHeader(Object.values(Header))}
                     {players.map((player, index) => renderPlayer(player, index))}
                 </tbody>
             </table>
