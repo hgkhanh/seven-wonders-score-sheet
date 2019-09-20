@@ -93,7 +93,7 @@ const Scoresheet = ({ match }) => {
 
     /**
      * Firestore get games from'game' collection
-     * 
+     * Only get once when Component mount
      */
     useEffect(() => {
         const db = firebase.firestore();

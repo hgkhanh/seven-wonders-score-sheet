@@ -1,16 +1,33 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import './start.scss';
 import { withRouter } from 'react-router-dom';
 import { store } from 'react-notifications-component';
 import 'firebase/firestore';
 import { FirebaseContext } from '../../utils/firebase';
-import { get } from 'http';
+
 const Start = () => {
     const firebase = useContext(FirebaseContext);
     const [code, setCode] = useState('');
-
+    const [roomList, setRoomList] = useState([]);
+    /**
+     * Get list of game room
+     */
+    useEffect(() => {
+        const db = firebase.firestore();
+        // Get all game by room code
+        db.collection('lobby').doc('list')
+            .get()
+            .then(snapshot => {
+                if (!snapshot.empty) {
+                    console.log(snapshot.data().room);
+                    setRoomList(snapshot.data().room);
+            }
+            }).catch(error => {
+                console.log(error);
+            });
+    }, []);
     // Elements
-    const GameLink = withRouter(
+    const JoinGame = withRouter(
         ({ history }) => {
             const handleJoin = () => {
                 // find room in db
@@ -54,6 +71,17 @@ const Start = () => {
         }
     );
 
+    const CreateGame = withRouter(
+        ({ history }) => {
+            const handleCreate = () => {
+                history.push(`/room/${code}`);
+            }
+            return (
+                <button onClick={handleCreate}>Create</button>
+            )
+        }
+    );
+
     // Handler
     // Prevent input other than numeric
     const handleCodeInput = async function (event) {
@@ -82,13 +110,17 @@ const Start = () => {
 
     return (
         <div className='start'>
+            <div>{JSON.stringify(roomList)}</div>
             <h3>Join Game</h3>
             <p>Insert your room code</p>
             <input type='tel' pattern='[0-9]*' maxLength='4'
                 onChange={(event) => setCode(event.target.value)}
                 onKeyPress={(event) => handleCodeInput(event)}></input>
-
-            <GameLink />
+            <JoinGame />
+            <hr/>
+            <h3>Create Game</h3>
+            <p>Create a new game</p>
+            <CreateGame />
         </div>
     );
 };
