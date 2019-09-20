@@ -1,18 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import Scoresheet from './components/Scoresheet';
+// import Scoresheet from './components/Scoresheet';
+import Start from './components/Start';
 // import Start from './components/Start';
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import FirebaseProvider from './utils/firebase'
+import FirebaseProvider from './utils/firebase';
+import ReactNotification from 'react-notifications-component';
+import 'react-notifications-component/dist/theme.css';
 
 ReactDOM.render(
     <FirebaseProvider>
+        <link rel="stylesheet" href="animate.min.css"></link>
+        <ReactNotification />
         <Router>
             <Switch>
-                <Route path="/" exact component={Scoresheet} />
-                {/* <Route path="/" exact component={Start} /> */}
+                {/* <Route path="/" exact component={Scoresheet} /> */}
+                <Route path="/" exact component={Start} />
                 <Route render={() => <h3>404</h3>} />
             </Switch>
         </Router>
