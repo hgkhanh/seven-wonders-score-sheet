@@ -5,7 +5,7 @@ import 'firebase/firestore';
 import { FirebaseContext } from '../../utils/firebase';
 import Header from '../../config/header';
 
-const Scoresheet = () => {
+const Scoresheet = ({ match }) => {
     const firebase = useContext(FirebaseContext);
     const gameId = 'iXRn0QvcMD5rxIk9bxcX';
     const blankPlayer = {
@@ -66,12 +66,12 @@ const Scoresheet = () => {
                 merge: true
             }
         )
-        .then(function() {
-            console.log("Score successfully saved!");
-        })
-        .catch(error => {
-            console.log(error);
-        });
+            .then(function () {
+                console.log('Score successfully saved!');
+            })
+            .catch(error => {
+                console.log(error);
+            });
     };
 
     const renderHeader = (list) => {
@@ -81,7 +81,7 @@ const Scoresheet = () => {
                 color: item.color === '#000' ? '#fff' : '#000'
             }
             // return <td id={index+row.name} {...row}/>
-            return <th className="title" key={`${item.name}-${index}`} style={style}>{item.name}</th>;
+            return <th className='title' key={`${item.name}-${index}`} style={style}>{item.name}</th>;
         });
         return (
             <tr>
@@ -93,24 +93,31 @@ const Scoresheet = () => {
 
     /**
      * Firestore get games from'game' collection
+     * 
      */
     useEffect(() => {
         const db = firebase.firestore();
-        const documentRef = db.collection('game').doc(gameId);
-        documentRef.get().then(snapshot => {
-            if (snapshot) {
-                console.log(snapshot);
-                console.log(snapshot.data().players);
-                dispatch(
-                    {
-                        type: 'setPoints',
-                        players: snapshot.data().players
-                    }
-                )
+
+        // Get all game by room code
+        db.collection('game').where('room', '==', match.params.id)
+            .orderBy("time", "desc")
+            .get()
+            .then(snapshot => {
+                if (!snapshot.empty) {
+                    snapshot.forEach((document) => {
+                        console.log(document);
+                        console.log(document.data().players);
+                        dispatch(
+                            {
+                                type: 'setPoints',
+                                players: document.data().players
+                            }
+                        )
+                    });
             }
-        }).catch(error => {
-            console.log(error);
-        });
+            }).catch(error => {
+                console.log(error);
+            });
     }, []);
 
     const renderPlayer = (player, index) => {
@@ -123,8 +130,9 @@ const Scoresheet = () => {
 
 
     return (
-        <div className="scoreSheet">
+        <div className='scoreSheet'>
             <h1>Score</h1>
+            <p>Room: {match.params.id}</p>
             <table>
                 <tbody>
                     {renderHeader(Object.values(Header))}
