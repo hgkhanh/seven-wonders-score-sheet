@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import './start.scss';
+import './Start.scss';
 import { withRouter } from 'react-router-dom';
 import { store } from 'react-notifications-component';
 import 'firebase/firestore';
