@@ -3,7 +3,9 @@ import './Start.scss';
 import { withRouter } from 'react-router-dom';
 import { store } from 'react-notifications-component';
 import 'firebase/firestore';
-import { FirebaseContext } from '../../utils/firebase';
+import { FirebaseContext } from 'components/Firebase/context';
+// import * as utils from 'utils';
+import blankGame from 'config/Game';
 
 const Start = () => {
     const firebase = useContext(FirebaseContext);
@@ -21,7 +23,7 @@ const Start = () => {
                 if (!snapshot.empty) {
                     console.log(snapshot.data().room);
                     setRoomList(snapshot.data().room);
-            }
+                }
             }).catch(error => {
                 console.log(error);
             });
@@ -34,7 +36,7 @@ const Start = () => {
                 if (isCodeValid(code)) {
                     findRoomByCode(code).then(snapshot => {
                         if (!snapshot.empty) {
-                            history.push(`/room/${code}`);
+                            history.push(`/game/${code}`);
                         } else {
                             store.addNotification({
                                 title: 'No Room Found!',
@@ -74,7 +76,20 @@ const Start = () => {
     const CreateGame = withRouter(
         ({ history }) => {
             const handleCreate = () => {
-                history.push(`/room/${code}`);
+                // const code = utils.generateRoomCode(4, roomList);
+                const db = firebase.firestore();
+                let newGame = blankGame;
+                newGame.time = new Date();
+                // create new document in game collection
+                db.collection('game')
+                    .add(newGame)
+                    .then(function (docRef) {
+                        console.log('Created new game with id:' + docRef.id);
+                        history.push(`/room/${docRef.id}`);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
             }
             return (
                 <button onClick={handleCreate}>Create</button>
@@ -117,7 +132,7 @@ const Start = () => {
                 onChange={(event) => setCode(event.target.value)}
                 onKeyPress={(event) => handleCodeInput(event)}></input>
             <JoinGame />
-            <hr/>
+            <hr />
             <h3>Create Game</h3>
             <p>Create a new game</p>
             <CreateGame />

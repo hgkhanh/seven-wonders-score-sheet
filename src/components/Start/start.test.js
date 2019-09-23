@@ -1,9 +1,9 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { shallow } from 'enzyme';
 import Start from './Start';
 
-it('renders without crashing', () => {
-    const div = document.createElement('div');
-    ReactDOM.render(<Start />, div);
-    ReactDOM.unmountComponentAtNode(div);
+describe('Scoresheet component test', () => {
+    it('renders without crashing', () => {
+        shallow(<Start />);
+    });
 });

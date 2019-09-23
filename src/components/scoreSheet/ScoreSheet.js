@@ -1,9 +1,10 @@
-import React, { useContext, useReducer, useEffect } from 'react';
+import React, { useContext, useState, useReducer, useEffect } from 'react';
 import './Scoresheet.scss';
 import Player from './Player';
 import 'firebase/firestore';
-import { FirebaseContext } from '../../utils/firebase';
-import Header from '../../config/header';
+import { FirebaseContext } from 'components/Firebase/context';
+import Header from 'config/Header';
+import * as utils from 'utils';
 
 const Scoresheet = ({ match }) => {
     const firebase = useContext(FirebaseContext);
@@ -12,6 +13,11 @@ const Scoresheet = ({ match }) => {
         name: '',
         score: []
     };
+    const [room, setRoom] = useState('');
+    // Lobby: rooms currently in play
+    const [lobby, updateLobby] = useState([]);
+    const [isError, setError] = useState(false);
+    const [isLoading, setLoading] = useState(true);
 
     const playersReducer = (playersState, action) => {
         let newPlayersState;
@@ -60,6 +66,7 @@ const Scoresheet = ({ match }) => {
         const documentRef = db.collection('game').doc(gameId);
         documentRef.set(
             {
+                room: room,
                 players: players
             },
             {
@@ -92,33 +99,88 @@ const Scoresheet = ({ match }) => {
     }
 
     /**
-     * Firestore get games from'game' collection
+     * Get games list from 'lobby' collection
      * Only get once when Component mount
      */
     useEffect(() => {
         const db = firebase.firestore();
+        // if (match && match.params && match.params.id) {
+        //     setRoom(match.params.id);
+        // }
 
+        // Get game by id
+        const gameDocRef = db.collection('game').doc(match.params.id);
+        gameDocRef.get()
+            .then((document) => {
+                if (document.exists) {
+                    // If game do not have a room code
+                    // Generate room code
+                    if (document.data().room === '') {
+                        const roomCode = utils.generateRoomCode(4, lobby);
+                        setRoom(roomCode);
+                        // Update room code in game object
+                        gameDocRef.set(
+                            {
+                                room: roomCode
+                            },
+                            {
+                                merge: true
+                            }
+                        );
+                        // Update room code in lobby list
+                        const lobbyDocRef = db.collection('lobby').doc('list');
+                        lobbyDocRef.set(
+                            {
+                                room: [...lobby, roomCode]
+                            }
+                        )
+                    } else {
+                        // If game have a room code
+                        // Fetch all game with the same room code
+                        setRoom(document.data().room);
+                    }
+                    // Display game data
+                    dispatch(
+                        {
+                            type: 'setPoints',
+                            players: document.data().players
+                        }
+                    )
+                } else {
+                    console.log('No such document id');
+                    setError(true);
+                }
+                setLoading(false);
+            }).catch((error) => {
+                console.log('Error getting document: ', error);
+                setError(true);
+                setLoading(false);
+            });
+        // Get room list from lobby
         // Get all game by room code
-        db.collection('game').where('room', '==', match.params.id)
-            .orderBy("time", "desc")
+        db.collection('lobby').doc('list')
             .get()
             .then(snapshot => {
                 if (!snapshot.empty) {
-                    snapshot.forEach((document) => {
-                        console.log(document);
-                        console.log(document.data().players);
-                        dispatch(
-                            {
-                                type: 'setPoints',
-                                players: document.data().players
-                            }
-                        )
-                    });
-            }
+                    console.log(snapshot.data().room);
+                    updateLobby(snapshot.data().room);
+                    setLoading(false);
+                }
             }).catch(error => {
+                setError(true);
+                setLoading(false);
                 console.log(error);
             });
     }, []);
+
+    /**
+     * Get games from'game' collection by id specified in url
+     * Only get once 'lobby' is retrieved
+     */
+    useEffect(() => {
+        const db = firebase.firestore();
+
+    }, [lobby]);
 
     const renderPlayer = (player, index) => {
         return (
@@ -128,11 +190,20 @@ const Scoresheet = ({ match }) => {
         )
     }
 
-
+    if (isLoading) {
+        return (
+            <h3>Loading...</h3>
+        )
+    }
+    if (isError) {
+        return (
+            <h3>Game not found!</h3>
+        )
+    }
     return (
         <div className='scoreSheet'>
             <h1>Score</h1>
-            <p>Room: {match.params.id}</p>
+            <p>Room: {room}</p>
             <table>
                 <tbody>
                     {renderHeader(Object.values(Header))}
