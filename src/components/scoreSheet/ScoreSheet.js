@@ -116,24 +116,43 @@ const Scoresheet = ({ match }) => {
                     // If game do not have a room code
                     // Generate room code
                     if (document.data().room === '') {
-                        const roomCode = utils.generateRoomCode(4, lobby);
-                        setRoom(roomCode);
-                        // Update room code in game object
-                        gameDocRef.set(
-                            {
-                                room: roomCode
-                            },
-                            {
-                                merge: true
-                            }
-                        );
-                        // Update room code in lobby list
                         const lobbyDocRef = db.collection('lobby').doc('list');
-                        lobbyDocRef.set(
-                            {
-                                room: [...lobby, roomCode]
-                            }
-                        )
+
+                        // Get room list from lobby
+                        lobbyDocRef.get()
+                            .then(document => {
+                                if (document.exists) {
+                                    // After getting lobby
+                                    const snapShotLobby = document.data().room;
+                                    console.log('snapShotLobby');
+                                    console.log(snapShotLobby);
+                                    updateLobby(snapShotLobby);
+                                    const roomCode = utils.generateRoomCode(4, snapShotLobby);
+                                    setRoom(roomCode);
+                                    // Update room code in game object
+                                    gameDocRef.set(
+                                        {
+                                            room: roomCode
+                                        },
+                                        {
+                                            merge: true
+                                        }
+                                    );
+                                    // Update room code in lobby list
+                                    console.log(snapShotLobby);
+                                    console.log([...snapShotLobby, roomCode]);
+                                    lobbyDocRef.set(
+                                        {
+                                            room: [...snapShotLobby, roomCode]
+                                        }
+                                    )
+                                } else {
+                                    console.log('Lobby list not found!');
+                                }
+                            }).catch(error => {
+                                setError(true);
+                                console.log(error);
+                            });
                     } else {
                         // If game have a room code
                         // Fetch all game with the same room code
@@ -156,31 +175,7 @@ const Scoresheet = ({ match }) => {
                 setError(true);
                 setLoading(false);
             });
-        // Get room list from lobby
-        // Get all game by room code
-        db.collection('lobby').doc('list')
-            .get()
-            .then(snapshot => {
-                if (!snapshot.empty) {
-                    console.log(snapshot.data().room);
-                    updateLobby(snapshot.data().room);
-                    setLoading(false);
-                }
-            }).catch(error => {
-                setError(true);
-                setLoading(false);
-                console.log(error);
-            });
     }, []);
-
-    /**
-     * Get games from'game' collection by id specified in url
-     * Only get once 'lobby' is retrieved
-     */
-    useEffect(() => {
-        const db = firebase.firestore();
-
-    }, [lobby]);
 
     const renderPlayer = (player, index) => {
         return (
@@ -204,6 +199,7 @@ const Scoresheet = ({ match }) => {
         <div className='scoreSheet'>
             <h1>Score</h1>
             <p>Room: {room}</p>
+            <p>Lobby: {JSON.stringify(lobby)}</p>
             <table>
                 <tbody>
                     {renderHeader(Object.values(Header))}
