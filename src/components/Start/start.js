@@ -85,7 +85,7 @@ const Start = () => {
                     .add(newGame)
                     .then(function (docRef) {
                         console.log('Created new game with id:' + docRef.id);
-                        history.push(`/room/${docRef.id}`);
+                        history.push(`/game/${docRef.id}`);
                     })
                     .catch(error => {
                         console.log(error);
