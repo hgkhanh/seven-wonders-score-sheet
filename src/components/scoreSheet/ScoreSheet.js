@@ -5,6 +5,7 @@ import 'firebase/firestore';
 import { FirebaseContext } from 'components/Firebase/context';
 import Category from 'config/Category';
 import * as utils from 'utils';
+import { store } from 'react-notifications-component';
 
 const Scoresheet = ({ match }) => {
     const firebase = useContext(FirebaseContext);
@@ -78,6 +79,19 @@ const Scoresheet = ({ match }) => {
         )
             .then(function () {
                 console.log('Score successfully saved!');
+                store.addNotification({
+                    title: 'Success',
+                    message: 'Score has been saved!',
+                    type: 'success',
+                    insert: 'top',
+                    container: 'top-right',
+                    animationIn: ['animated', 'fadeIn', 'faster'],
+                    animationOut: ['animated', 'fadeOut', 'fast'],
+                    dismiss: {
+                        duration: 2000
+                    },
+                    width: 300
+                });
             })
             .catch(error => {
                 console.log(error);
@@ -227,8 +241,6 @@ const Scoresheet = ({ match }) => {
         <div className='scoreSheet'>
             <h1>Score</h1>
             <p>Room: {room}</p>
-            <p>Lobby: {JSON.stringify(lobby)}</p>
-            <p>Players: {JSON.stringify(players)}</p>
             <table>
                 <thead>
                     <tr>
@@ -244,6 +256,9 @@ const Scoresheet = ({ match }) => {
             </table>
 
             <button onClick={saveScore}>Save score</button>
+            <br></br>
+            <p>Lobby: {JSON.stringify(lobby)}</p>
+            <p>Players: {JSON.stringify(players)}</p>
         </div>
     );
 };

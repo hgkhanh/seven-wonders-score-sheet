@@ -15,3 +15,13 @@ table {
 input {
     width: 100%;
 }
+
+.playerName {
+    position: relative;
+}
+
+.btnRemove {
+    position: absolute;
+    top: 7px;
+    right: 0;
+}

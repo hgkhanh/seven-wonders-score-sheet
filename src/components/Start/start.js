@@ -56,7 +56,8 @@ const Start = () => {
                                 animationOut: ['animated', 'fadeOut', 'fast'],
                                 dismiss: {
                                     duration: 2000
-                                }
+                                },
+                                width: 300
                             });
                         }
                     });
@@ -72,7 +73,8 @@ const Start = () => {
                         animationOut: ['animated', 'fadeOut', 'fast'],
                         dismiss: {
                             duration: 2000
-                        }
+                        },
+                        width: 300
                     });
                 }
             }
@@ -121,10 +123,10 @@ const Start = () => {
      * @param {string} code - room code to search for
      * @return {Object} an array of document references of found games, order by time, newest first
      */
-    const findGamesByCode = (code) => {
-        const db = firebase.firestore();
-        return db.collection('game').where('room', '==', code).orderBy('time', 'desc').get();
-    }
+    // const findGamesByCode = (code) => {
+    //     const db = firebase.firestore();
+    //     return db.collection('game').where('room', '==', code).orderBy('time', 'desc').get();
+    // }
 
     // Utils
     /**
@@ -139,7 +141,6 @@ const Start = () => {
 
     return (
         <div className='start'>
-            <div>{JSON.stringify(roomList)}</div>
             <h3>Join Game</h3>
             <p>Insert your room code</p>
             <input type='tel' pattern='[0-9]*' maxLength='4'
@@ -150,6 +151,7 @@ const Start = () => {
             <h3>Create Game</h3>
             <p>Create a new game</p>
             <CreateGame />
+            <div>{JSON.stringify(roomList)}</div>
         </div>
     );
 };

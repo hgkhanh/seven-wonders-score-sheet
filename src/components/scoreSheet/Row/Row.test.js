@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import Row from './Row';
-import Header from '../../../config/header';
+import Header from '../../../config/Category';
 
 describe('Rows component test', () => {
     it('renders correctly with normal props', () => {
