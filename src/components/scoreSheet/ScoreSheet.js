@@ -1,9 +1,9 @@
 import React, { useContext, useState, useReducer, useEffect } from 'react';
 import './Scoresheet.scss';
-import Player from './Player';
+import Row from './Row';
 import 'firebase/firestore';
 import { FirebaseContext } from 'components/Firebase/context';
-import Header from 'config/Header';
+import Category from 'config/Category';
 import * as utils from 'utils';
 
 const Scoresheet = ({ match }) => {
@@ -19,12 +19,15 @@ const Scoresheet = ({ match }) => {
     const [isError, setError] = useState(false);
     const [isLoading, setLoading] = useState(true);
 
+    /**
+     * Handle action to main app object - players
+     */
     const playersReducer = (playersState, action) => {
         let newPlayersState;
         switch (action.type) {
             case 'setPoints':
                 // Set a single point field
-                if (action.playerNumber) {
+                if (typeof action.playerNumber === 'number') {
                     console.log('Set a single point field');
                     newPlayersState = [...playersState];
                     newPlayersState[action.playerNumber].score[action.column] = action.point;
@@ -81,26 +84,12 @@ const Scoresheet = ({ match }) => {
             });
     };
 
-    const renderHeader = (list) => {
-        const headerHTML = list.map((item, index) => {
-            const style = {
-                backgroundColor: item.color,
-                color: item.color === '#000' ? '#fff' : '#000'
-            }
-            // return <td id={index+row.name} {...row}/>
-            return <th className='title' key={`${item.name}-${index}`} style={style}>{item.name}</th>;
-        });
-        return (
-            <tr>
-                <th>Player Name</th>
-                {headerHTML}
-            </tr>
-        );
-    }
-
     /**
-     * Get games list from 'lobby' collection
-     * Only get once when Component mount
+     * Fetch game by id
+     * Check room code of current game
+     * If no room code: Generate new one, exclude room code from lobby list
+     * TO-DO If has room code: Fetch all game with current room code
+     * Only run once when Component mount
      */
     useEffect(() => {
         const db = firebase.firestore();
@@ -124,8 +113,6 @@ const Scoresheet = ({ match }) => {
                                 if (document.exists) {
                                     // After getting lobby
                                     const snapShotLobby = document.data().room;
-                                    console.log('snapShotLobby');
-                                    console.log(snapShotLobby);
                                     updateLobby(snapShotLobby);
                                     const roomCode = utils.generateRoomCode(4, snapShotLobby);
                                     setRoom(roomCode);
@@ -139,8 +126,6 @@ const Scoresheet = ({ match }) => {
                                         }
                                     );
                                     // Update room code in lobby list
-                                    console.log(snapShotLobby);
-                                    console.log([...snapShotLobby, roomCode]);
                                     lobbyDocRef.set(
                                         {
                                             room: [...snapShotLobby, roomCode]
@@ -149,9 +134,6 @@ const Scoresheet = ({ match }) => {
                                 } else {
                                     console.log('Lobby list not found!');
                                 }
-                            }).catch(error => {
-                                setError(true);
-                                console.log(error);
                             });
                     } else {
                         // If game have a room code
@@ -177,13 +159,59 @@ const Scoresheet = ({ match }) => {
             });
     }, []);
 
-    const renderPlayer = (player, index) => {
-        return (
-            <Player key={`${player.name} ${index}`} index={index} name={player.name}
-                score={player.score} header={Header}
-                dispatch={dispatch} />
-        )
+    // Handler functions
+    const handleNameChange = (event, playerId) => {
+        dispatch(
+            {
+                type: 'setName',
+                playerNumber: playerId,
+                name: event.target.value
+            }
+        );
     }
+
+    const handleRemovePlayer = (playerId) => {
+        dispatch(
+            {
+                type: 'removePlayer',
+                playerNumber: playerId
+            }
+        );
+    }
+
+    /**
+     * RENDER FUNCTIONS
+     */ 
+    const renderPlayerName = (player, playerId) => (
+        <th key={`player-${playerId}`} className='playerName'>
+            <input type='text' value={player.name} onChange={(event) => handleNameChange(event, playerId)} />
+            <button className='btnRemove' onClick={() => handleRemovePlayer(playerId)}>-</button>
+        </th>
+    );
+
+    // A row show score in one category - identified by categoryIndex
+    const renderRow = (category, categoryIndex) => {
+        // Data: an array of scores of all players in that category
+        const data = players.map(player => player.score[categoryIndex]);
+        return (
+        <Row key={category.name} pointIndex={categoryIndex} name={category.name}
+            color={category.color} data={data} dispatch={dispatch} />
+        );
+    };
+
+    // A row show total scores of all player
+    const renderRowTotal = () => {
+        // Data: an array of total scores of all players
+        const data = players.map(player => {
+            // Calculate sum of point
+            return player.score.reduce((accumulator, point) => {
+                return point === '' ? accumulator : accumulator + parseInt(point)
+            }, 0);
+        });
+        return (
+        <Row name='Total' data={data} readOnly={true}/>
+        );
+    };
 
     if (isLoading) {
         return (
@@ -200,13 +228,21 @@ const Scoresheet = ({ match }) => {
             <h1>Score</h1>
             <p>Room: {room}</p>
             <p>Lobby: {JSON.stringify(lobby)}</p>
+            <p>Players: {JSON.stringify(players)}</p>
             <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        {players.map((player, playerId) => renderPlayerName(player, playerId))}
+                        <th><button onClick={addPlayer}>Add Player</button></th>
+                    </tr>
+                </thead>
                 <tbody>
-                    {renderHeader(Object.values(Header))}
-                    {players.map((player, index) => renderPlayer(player, index))}
+                    {Category.map((category, index) => renderRow(category, index))}
+                    {renderRowTotal()}
                 </tbody>
             </table>
-            <button onClick={addPlayer}>Add Player</button>
+
             <button onClick={saveScore}>Save score</button>
         </div>
     );
