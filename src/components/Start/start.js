@@ -34,12 +34,20 @@ const Start = () => {
             const handleJoin = () => {
                 // find room in db
                 if (isCodeValid(code)) {
-                    findRoomByCode(code).then(snapshot => {
-                        if (!snapshot.empty) {
-                            history.push(`/game/${code}`);
+                    console.log('Entering Room: ' + code);
+
+                    const db = firebase.firestore();
+                    db.collection('game').where('room', '==', code).orderBy('time', 'desc').limit(1).get().then(querySnapshot => {
+                        if (!querySnapshot.empty) {
+                            const game = querySnapshot.docs[0];
+                            console.log('findRoomByCode result');
+                            console.log(game.data());
+                            console.log(`Navigating to game room: /game/${game.id}`);
+                            history.push(`/game/${game.id}`);
                         } else {
+                            console.log(`Room ${code} not found!`);
                             store.addNotification({
-                                title: 'No Room Found!',
+                                title: `Cannot find room ${code}`,
                                 message: 'Is your room code correct ?',
                                 type: 'warning',
                                 insert: 'top',
@@ -53,6 +61,7 @@ const Start = () => {
                         }
                     });
                 } else {
+                    console.log('Room code is in wrong format!');
                     store.addNotification({
                         title: 'Need 4 digits!',
                         message: 'Were you missing a number ?',
@@ -106,10 +115,15 @@ const Start = () => {
         }
     }
 
-    // Query firestore for room by code
-    const findRoomByCode = (code) => {
+    // 
+    /**
+     * Query firestore for games with given room code
+     * @param {string} code - room code to search for
+     * @return {Object} an array of document references of found games, order by time, newest first
+     */
+    const findGamesByCode = (code) => {
         const db = firebase.firestore();
-        return db.collection('game').where('room', '==', code).get();
+        return db.collection('game').where('room', '==', code).orderBy('time', 'desc').get();
     }
 
     // Utils
