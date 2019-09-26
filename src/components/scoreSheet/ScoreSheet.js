@@ -1,9 +1,13 @@
-import React, { useContext, useReducer, useEffect } from 'react';
-import './scoresheet.scss';
-import Player from './Player';
+import React, { useContext, useState, useReducer, useEffect } from 'react';
+import './Scoresheet.scss';
+import Row from './Row';
 import 'firebase/firestore';
-import { FirebaseContext } from '../../utils/firebase';
-import Header from '../../config/header';
+import { FirebaseContext } from 'components/Firebase/context';
+import Category from 'config/Category';
+import * as utils from 'utils';
+import { store } from 'react-notifications-component';
+import { BrowserRouter as Route, Link } from "react-router-dom";
+import Start from '../Start';
 
 const Scoresheet = ({ match }) => {
     const firebase = useContext(FirebaseContext);
@@ -12,13 +16,21 @@ const Scoresheet = ({ match }) => {
         name: '',
         score: []
     };
+    const [room, setRoom] = useState('');
+    // Lobby: rooms currently in play
+    const [lobby, updateLobby] = useState([]);
+    const [isError, setError] = useState(false);
+    const [isLoading, setLoading] = useState(true);
 
+    /**
+     * Handle action to main app object - players
+     */
     const playersReducer = (playersState, action) => {
         let newPlayersState;
         switch (action.type) {
             case 'setPoints':
                 // Set a single point field
-                if (action.playerNumber) {
+                if (typeof action.playerNumber === 'number') {
                     console.log('Set a single point field');
                     newPlayersState = [...playersState];
                     newPlayersState[action.playerNumber].score[action.column] = action.point;
@@ -60,6 +72,7 @@ const Scoresheet = ({ match }) => {
         const documentRef = db.collection('game').doc(gameId);
         documentRef.set(
             {
+                room: room,
                 players: players
             },
             {
@@ -68,79 +81,186 @@ const Scoresheet = ({ match }) => {
         )
             .then(function () {
                 console.log('Score successfully saved!');
+                store.addNotification({
+                    title: 'Success',
+                    message: 'Score has been saved!',
+                    type: 'success',
+                    insert: 'top',
+                    container: 'top-right',
+                    animationIn: ['animated', 'fadeIn', 'faster'],
+                    animationOut: ['animated', 'fadeOut', 'fast'],
+                    dismiss: {
+                        duration: 2000
+                    },
+                    width: 300
+                });
             })
             .catch(error => {
                 console.log(error);
             });
     };
 
-    const renderHeader = (list) => {
-        const headerHTML = list.map((item, index) => {
-            const style = {
-                backgroundColor: item.color,
-                color: item.color === '#000' ? '#fff' : '#000'
+    /**
+     * Fetch game by id
+     * Check room code of current game
+     * If no room code: Generate new one, exclude room code from lobby list
+     * TO-DO If has room code: Fetch all game with current room code
+     * Only run once when Component mount
+     */
+    useEffect(() => {
+        const db = firebase.firestore();
+        // if (match && match.params && match.params.id) {
+        //     setRoom(match.params.id);
+        // }
+
+        // Get game by id
+        const gameDocRef = db.collection('game').doc(match.params.id);
+        gameDocRef.get()
+            .then((document) => {
+                if (document.exists) {
+                    // If game do not have a room code
+                    // Generate room code
+                    if (document.data().room === '') {
+                        const lobbyDocRef = db.collection('lobby').doc('list');
+
+                        // Get room list from lobby
+                        lobbyDocRef.get()
+                            .then(document => {
+                                if (document.exists) {
+                                    // After getting lobby
+                                    const snapShotLobby = document.data().room;
+                                    updateLobby(snapShotLobby);
+                                    const roomCode = utils.generateRoomCode(4, snapShotLobby);
+                                    setRoom(roomCode);
+                                    // Update room code in game object
+                                    gameDocRef.set(
+                                        {
+                                            room: roomCode
+                                        },
+                                        {
+                                            merge: true
+                                        }
+                                    );
+                                    // Update room code in lobby list
+                                    lobbyDocRef.set(
+                                        {
+                                            room: [...snapShotLobby, roomCode]
+                                        }
+                                    )
+                                } else {
+                                    console.log('Lobby list not found!');
+                                }
+                            });
+                    } else {
+                        // If game have a room code
+                        // Fetch all game with the same room code
+                        setRoom(document.data().room);
+                    }
+                    // Display game data
+                    dispatch(
+                        {
+                            type: 'setPoints',
+                            players: document.data().players
+                        }
+                    )
+                } else {
+                    console.log('No such document id');
+                    setError(true);
+                }
+                setLoading(false);
+            }).catch((error) => {
+                console.log('Error getting document: ', error);
+                setError(true);
+                setLoading(false);
+            });
+    }, []);
+
+    // Handler functions
+    const handleNameChange = (event, playerId) => {
+        dispatch(
+            {
+                type: 'setName',
+                playerNumber: playerId,
+                name: event.target.value
             }
-            // return <td id={index+row.name} {...row}/>
-            return <th className='title' key={`${item.name}-${index}`} style={style}>{item.name}</th>;
-        });
-        return (
-            <tr>
-                <th>Player Name</th>
-                {headerHTML}
-            </tr>
+        );
+    }
+
+    const handleRemovePlayer = (playerId) => {
+        dispatch(
+            {
+                type: 'removePlayer',
+                playerNumber: playerId
+            }
         );
     }
 
     /**
-     * Firestore get games from'game' collection
-     * Only get once when Component mount
+     * RENDER FUNCTIONS
      */
-    useEffect(() => {
-        const db = firebase.firestore();
+    const renderPlayerName = (player, playerId) => (
+        <th key={`player-${playerId}`} className='playerName'>
+            <input type='text' value={player.name} onChange={(event) => handleNameChange(event, playerId)} />
+            <button className='btnRemove' onClick={() => handleRemovePlayer(playerId)}>-</button>
+        </th>
+    );
 
-        // Get all game by room code
-        db.collection('game').where('room', '==', match.params.id)
-            .orderBy("time", "desc")
-            .get()
-            .then(snapshot => {
-                if (!snapshot.empty) {
-                    snapshot.forEach((document) => {
-                        console.log(document);
-                        console.log(document.data().players);
-                        dispatch(
-                            {
-                                type: 'setPoints',
-                                players: document.data().players
-                            }
-                        )
-                    });
-            }
-            }).catch(error => {
-                console.log(error);
-            });
-    }, []);
-
-    const renderPlayer = (player, index) => {
+    // A row show score in one category - identified by categoryIndex
+    const renderRow = (category, categoryIndex) => {
+        // Data: an array of scores of all players in that category
+        const data = players.map(player => player.score[categoryIndex]);
         return (
-            <Player key={`${player.name} ${index}`} index={index} name={player.name}
-                score={player.score} header={Header}
-                dispatch={dispatch} />
+            <Row key={category.name} pointIndex={categoryIndex} name={category.name}
+                color={category.color} data={data} dispatch={dispatch} />
+        );
+    };
+
+    // A row show total scores of all player
+    const renderRowTotal = () => {
+        // Data: an array of total scores of all players
+        const data = players.map(player => {
+            // Calculate sum of point
+            return player.score.reduce((accumulator, point) => {
+                return point === '' ? accumulator : accumulator + parseInt(point)
+            }, 0);
+        });
+        return (
+            <Row name='Total' data={data} readOnly={true} />
+        );
+    };
+
+    if (isLoading) {
+        return (
+            <h3>Loading...</h3>
         )
     }
-
-
+    if (isError) {
+        return (
+            <h3>Game not found!</h3>
+        )
+    }
     return (
         <div className='scoreSheet'>
+            <Link to='/'>Home</Link>
             <h1>Score</h1>
-            <p>Room: {match.params.id}</p>
+            <p>Room: {room}</p>
             <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        {players.map((player, playerId) => renderPlayerName(player, playerId))}
+                        <th><button onClick={addPlayer}>Add Player</button></th>
+                    </tr>
+                </thead>
                 <tbody>
-                    {renderHeader(Object.values(Header))}
-                    {players.map((player, index) => renderPlayer(player, index))}
+                    {Category.map((category, index) => renderRow(category, index))}
+                    {renderRowTotal()}
                 </tbody>
             </table>
-            <button onClick={addPlayer}>Add Player</button>
+
             <button onClick={saveScore}>Save score</button>
+
+            <Route exact path="/start" component={Start} />
         </div>
     );
 };

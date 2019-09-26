@@ -1,4 +1,5 @@
-const Header = [
+// Name of the categories to calculate victory point
+const Category = [
     {
         name: 'military',
         color: '#a83232'
@@ -40,4 +41,4 @@ const Header = [
         color: '#33b1ff'
     }
 ];
-export default Header;
+export default Category;

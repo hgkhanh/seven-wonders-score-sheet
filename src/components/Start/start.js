@@ -1,9 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
-import './start.scss';
+import './Start.scss';
 import { withRouter } from 'react-router-dom';
 import { store } from 'react-notifications-component';
 import 'firebase/firestore';
-import { FirebaseContext } from '../../utils/firebase';
+import { FirebaseContext } from 'components/Firebase/context';
+// import * as utils from 'utils';
+import blankGame from 'config/Game';
 
 const Start = () => {
     const firebase = useContext(FirebaseContext);
@@ -21,7 +23,7 @@ const Start = () => {
                 if (!snapshot.empty) {
                     console.log(snapshot.data().room);
                     setRoomList(snapshot.data().room);
-            }
+                }
             }).catch(error => {
                 console.log(error);
             });
@@ -32,12 +34,20 @@ const Start = () => {
             const handleJoin = () => {
                 // find room in db
                 if (isCodeValid(code)) {
-                    findRoomByCode(code).then(snapshot => {
-                        if (!snapshot.empty) {
-                            history.push(`/room/${code}`);
+                    console.log('Entering Room: ' + code);
+
+                    const db = firebase.firestore();
+                    db.collection('game').where('room', '==', code).orderBy('time', 'desc').limit(1).get().then(querySnapshot => {
+                        if (!querySnapshot.empty) {
+                            const game = querySnapshot.docs[0];
+                            console.log('findRoomByCode result');
+                            console.log(game.data());
+                            console.log(`Navigating to game room: /game/${game.id}`);
+                            history.push(`/game/${game.id}`);
                         } else {
+                            console.log(`Room ${code} not found!`);
                             store.addNotification({
-                                title: 'No Room Found!',
+                                title: `Cannot find room ${code}`,
                                 message: 'Is your room code correct ?',
                                 type: 'warning',
                                 insert: 'top',
@@ -46,11 +56,13 @@ const Start = () => {
                                 animationOut: ['animated', 'fadeOut', 'fast'],
                                 dismiss: {
                                     duration: 2000
-                                }
+                                },
+                                width: 300
                             });
                         }
                     });
                 } else {
+                    console.log('Room code is in wrong format!');
                     store.addNotification({
                         title: 'Need 4 digits!',
                         message: 'Were you missing a number ?',
@@ -61,7 +73,8 @@ const Start = () => {
                         animationOut: ['animated', 'fadeOut', 'fast'],
                         dismiss: {
                             duration: 2000
-                        }
+                        },
+                        width: 300
                     });
                 }
             }
@@ -74,7 +87,20 @@ const Start = () => {
     const CreateGame = withRouter(
         ({ history }) => {
             const handleCreate = () => {
-                history.push(`/room/${code}`);
+                // const code = utils.generateRoomCode(4, roomList);
+                const db = firebase.firestore();
+                let newGame = blankGame;
+                newGame.time = new Date();
+                // create new document in game collection
+                db.collection('game')
+                    .add(newGame)
+                    .then(function (docRef) {
+                        console.log('Created new game with id:' + docRef.id);
+                        history.push(`/game/${docRef.id}`);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
             }
             return (
                 <button onClick={handleCreate}>Create</button>
@@ -91,11 +117,16 @@ const Start = () => {
         }
     }
 
-    // Query firestore for room by code
-    const findRoomByCode = (code) => {
-        const db = firebase.firestore();
-        return db.collection('game').where('room', '==', code).get();
-    }
+    // 
+    /**
+     * Query firestore for games with given room code
+     * @param {string} code - room code to search for
+     * @return {Object} an array of document references of found games, order by time, newest first
+     */
+    // const findGamesByCode = (code) => {
+    //     const db = firebase.firestore();
+    //     return db.collection('game').where('room', '==', code).orderBy('time', 'desc').get();
+    // }
 
     // Utils
     /**
@@ -110,14 +141,14 @@ const Start = () => {
 
     return (
         <div className='start'>
-            <div>{JSON.stringify(roomList)}</div>
             <h3>Join Game</h3>
             <p>Insert your room code</p>
             <input type='tel' pattern='[0-9]*' maxLength='4'
                 onChange={(event) => setCode(event.target.value)}
                 onKeyPress={(event) => handleCodeInput(event)}></input>
+            <br />
             <JoinGame />
-            <hr/>
+            <br />
             <h3>Create Game</h3>
             <p>Create a new game</p>
             <CreateGame />

@@ -1,1 +1,1 @@
-export { default } from './scoresheet';
+export { default } from './Scoresheet';

@@ -5,7 +5,7 @@ import Scoresheet from './components/Scoresheet';
 import Start from './components/Start';
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import FirebaseProvider from './utils/firebase';
+import FirebaseProvider from './components/Firebase/context';
 import ReactNotification from 'react-notifications-component';
 import 'react-notifications-component/dist/theme.css';
 
@@ -15,7 +15,7 @@ ReactDOM.render(
         <ReactNotification />
         <Router>
             <Switch>
-                <Route path="/room/:id" component={Scoresheet} />
+                <Route path="/game/:id" component={Scoresheet} />
                 <Route path="/" exact component={Start} />
                 <Route render={() => <h3>404</h3>} />
             </Switch>
