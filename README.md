@@ -1,5 +1,7 @@
 Seven wonders scoresheet with React and Firebase
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/11527cc4-e971-4661-9098-7cc9caf6c0f9/deploy-status)](https://app.netlify.com/sites/hgkhanh/deploys)
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
