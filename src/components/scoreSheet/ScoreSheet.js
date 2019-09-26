@@ -6,6 +6,8 @@ import { FirebaseContext } from 'components/Firebase/context';
 import Category from 'config/Category';
 import * as utils from 'utils';
 import { store } from 'react-notifications-component';
+import { BrowserRouter as Route, Link } from "react-router-dom";
+import Start from '../Start';
 
 const Scoresheet = ({ match }) => {
     const firebase = useContext(FirebaseContext);
@@ -195,7 +197,7 @@ const Scoresheet = ({ match }) => {
 
     /**
      * RENDER FUNCTIONS
-     */ 
+     */
     const renderPlayerName = (player, playerId) => (
         <th key={`player-${playerId}`} className='playerName'>
             <input type='text' value={player.name} onChange={(event) => handleNameChange(event, playerId)} />
@@ -208,8 +210,8 @@ const Scoresheet = ({ match }) => {
         // Data: an array of scores of all players in that category
         const data = players.map(player => player.score[categoryIndex]);
         return (
-        <Row key={category.name} pointIndex={categoryIndex} name={category.name}
-            color={category.color} data={data} dispatch={dispatch} />
+            <Row key={category.name} pointIndex={categoryIndex} name={category.name}
+                color={category.color} data={data} dispatch={dispatch} />
         );
     };
 
@@ -223,7 +225,7 @@ const Scoresheet = ({ match }) => {
             }, 0);
         });
         return (
-        <Row name='Total' data={data} readOnly={true}/>
+            <Row name='Total' data={data} readOnly={true} />
         );
     };
 
@@ -239,6 +241,7 @@ const Scoresheet = ({ match }) => {
     }
     return (
         <div className='scoreSheet'>
+            <Link to='/'>Home</Link>
             <h1>Score</h1>
             <p>Room: {room}</p>
             <table>
@@ -256,9 +259,8 @@ const Scoresheet = ({ match }) => {
             </table>
 
             <button onClick={saveScore}>Save score</button>
-            <br></br>
-            <p>Lobby: {JSON.stringify(lobby)}</p>
-            <p>Players: {JSON.stringify(players)}</p>
+
+            <Route exact path="/start" component={Start} />
         </div>
     );
 };

@@ -146,12 +146,12 @@ const Start = () => {
             <input type='tel' pattern='[0-9]*' maxLength='4'
                 onChange={(event) => setCode(event.target.value)}
                 onKeyPress={(event) => handleCodeInput(event)}></input>
+            <br />
             <JoinGame />
-            <hr />
+            <br />
             <h3>Create Game</h3>
             <p>Create a new game</p>
             <CreateGame />
-            <div>{JSON.stringify(roomList)}</div>
         </div>
     );
 };
