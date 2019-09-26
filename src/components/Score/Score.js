@@ -1,5 +1,5 @@
 import React, { useContext, useState, useReducer, useEffect } from 'react';
-import './Scoresheet.scss';
+import './Score.scss';
 import Row from './Row';
 import 'firebase/firestore';
 import { FirebaseContext } from 'components/Firebase/context';

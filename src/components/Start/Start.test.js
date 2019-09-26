@@ -1,9 +1,9 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import Scoresheet from './Scoresheet';
+import Start from './Start';
 
 describe('Scoresheet component test', () => {
-   it('renders without crashing', () => {
-      shallow(<Scoresheet />);
+    it('renders without crashing', () => {
+        shallow(<Start />);
     });
 });
