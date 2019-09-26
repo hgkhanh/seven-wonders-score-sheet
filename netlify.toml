@@ -1,0 +1,4 @@
+[build]
+base = "seven/"
+publish = "seven/build/"
+command = "npm run build"

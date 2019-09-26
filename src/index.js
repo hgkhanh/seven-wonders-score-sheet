@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import Scoresheet from './components/Scoresheet';
+import Score from './components/Score';
 import Start from './components/Start';
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
@@ -15,7 +15,7 @@ ReactDOM.render(
         <ReactNotification />
         <Router>
             <Switch>
-                <Route path="/game/:id" component={Scoresheet} />
+                <Route path="/game/:id" component={Score} />
                 <Route path="/" exact component={Start} />
                 <Route render={() => <h3>404</h3>} />
             </Switch>
