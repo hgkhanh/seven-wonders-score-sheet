@@ -2,6 +2,7 @@
   "name": "seven-wonders-score-sheet",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/seven",
   "dependencies": {
     "@material-ui/core": "^4.4.3",
     "animate.css": "^3.7.2",
