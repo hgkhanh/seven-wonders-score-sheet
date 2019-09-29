@@ -13,7 +13,7 @@ ReactDOM.render(
     <FirebaseProvider>
         <link rel="stylesheet" href="animate.min.css"></link>
         <ReactNotification />
-        <Router>
+        <Router basename={process.env.PUBLIC_URL}>
             <Switch>
                 <Route path="/game/:id" component={Score} />
                 <Route path="/" exact component={Start} />
