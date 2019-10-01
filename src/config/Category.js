@@ -2,43 +2,53 @@
 const Category = [
     {
         name: 'military',
-        color: '#a83232'
+        color: '#a83232',
+        card: true
     },
     {
         name: 'coin',
-        color: '#a89832'
+        color: '#fed867',
+        card: false
     },
     {
-        name: 'wonders',
-        color: '#806821'
+        name: 'wonder',
+        color: '#ebebeb',
+        card: false
     },
     {
         name: 'culture',
-        color: '#245e9c'
+        color: '#245e9c',
+        card: true
     },
     {
         name: 'trading',
-        color: '#cfca42'
+        color: '#fdca07',
+        card: true
     },
     {
         name: 'guild',
-        color: '#5d29d6'
+        color: '#5d29d6',
+        card: true
     },
     {
         name: 'science',
-        color: '#308a00'
+        color: '#308a00',
+        card: true
     },
     {
         name: 'leader',
-        color: '#ebebeb'
+        color: '#ebebeb',
+        card: false
     },
     {
         name: 'city',
-        color: '#000'
+        color: '#000000',
+        card: true
     },
     {
-        name: 'armanda',
-        color: '#33b1ff'
+        name: 'armada',
+        color: '#ebebeb',
+        card: false
     }
 ];
 export default Category;

@@ -211,7 +211,7 @@ const Scoresheet = ({ match }) => {
         const data = players.map(player => player.score[categoryIndex]);
         return (
             <Row key={category.name} pointIndex={categoryIndex} name={category.name}
-                color={category.color} data={data} dispatch={dispatch} />
+                color={category.color} card={category.card} data={data} dispatch={dispatch} />
         );
     };
 
@@ -225,7 +225,7 @@ const Scoresheet = ({ match }) => {
             }, 0);
         });
         return (
-            <Row name='Total' data={data} readOnly={true} />
+            <Row name='Σ' data={data} readOnly={true} />
         );
     };
 

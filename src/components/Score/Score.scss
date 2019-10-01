@@ -4,24 +4,34 @@ body {
 }
 
 table {
+    border-collapse: collapse;
+    height: 100vh;
+
     td {
         padding: 5px;
     }
-
-    table-layout: fixed;
-    width: 100%;
 }
 
 input {
     width: 100%;
 }
 
-.playerName {
-    position: relative;
-}
-
 .btnRemove {
     position: absolute;
     top: 7px;
     right: 0;
+}
+
+.inputCell, .playerName {
+    position: relative;
+    font-weight: bold;
+    text-align: center;
+    input, span {
+        border: none;
+        text-align: center;
+        outline: none;
+        background: transparent;
+        font-size: 20px;
+        max-width: 108px;
+    }
 }
