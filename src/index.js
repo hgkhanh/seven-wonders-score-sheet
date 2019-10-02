@@ -11,7 +11,8 @@ import 'react-notifications-component/dist/theme.css';
 
 ReactDOM.render(
     <FirebaseProvider>
-        <link rel="stylesheet" href="animate.min.css"></link>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"></link>
         <ReactNotification />
         <Router basename={process.env.PUBLIC_URL}>
             <Switch>

@@ -3,28 +3,31 @@ td {
     font-size: 20px;
     text-align: center;
     max-width: 108px;
+
+    .icon {
+        height: 48px;
+    }
+
+    .card {
+        border: 2px solid #fff;
+        width: 28px;
+        border-radius: 4px;
+        margin: 0 auto;
+    }
+
+    .text {
+        color: #fff;
+        font-size: 48px;
+        line-height: 48px;
+    }
 }
 
 .rowHeader {
     text-align: center;
     width: 108px;
+    border-right: 1px solid #aaa;
 }
 
-.icon {
-    height: 48px;
-}
-
-.card {
-    border: 2px solid #fff;
-    width: 28px;
-    border-radius: 4px;
-    margin: 0 auto;
-}
-
-.text {
+.rowHeader.total {
     background: #231f20;
-    color: #fff;
-    font-size: 36px;
 }
-
-

@@ -8,6 +8,7 @@ import * as utils from 'utils';
 import { store } from 'react-notifications-component';
 import { BrowserRouter as Route, Link } from "react-router-dom";
 import Start from '../Start';
+import { RemoveCircleTwoTone } from '@material-ui/icons';
 
 const Scoresheet = ({ match }) => {
     const firebase = useContext(FirebaseContext);
@@ -201,7 +202,9 @@ const Scoresheet = ({ match }) => {
     const renderPlayerName = (player, playerId) => (
         <th key={`player-${playerId}`} className='playerName'>
             <input type='text' value={player.name} onChange={(event) => handleNameChange(event, playerId)} />
-            <button className='btnRemove' onClick={() => handleRemovePlayer(playerId)}>-</button>
+            <button className='btnRemove' onClick={() => handleRemovePlayer(playerId)}>
+                <RemoveCircleTwoTone color="error" />
+            </button>
         </th>
     );
 
@@ -242,25 +245,29 @@ const Scoresheet = ({ match }) => {
     return (
         <div className='scoreSheet'>
             <Link to='/'>Home</Link>
-            <h1>Score</h1>
-            <p>Room: {room}</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th></th>
-                        {players.map((player, playerId) => renderPlayerName(player, playerId))}
-                        <th><button onClick={addPlayer}>Add Player</button></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {Category.map((category, index) => renderRow(category, index))}
-                    {renderRowTotal()}
-                </tbody>
-            </table>
+            <div className="titleHeader">
+                <h1>Score</h1>
+                <p>Room: {room}</p>
+            </div>
+            <div className='content'>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            {players.map((player, playerId) => renderPlayerName(player, playerId))}
+                            <th><button onClick={addPlayer}>Add Player</button></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {Category.map((category, index) => renderRow(category, index))}
+                        {renderRowTotal()}
+                    </tbody>
+                </table>
 
-            <button onClick={saveScore}>Save score</button>
+                <button onClick={saveScore}>Save score</button>
 
-            <Route exact path="/start" component={Start} />
+                <Route exact path="/start" component={Start} />
+            </div>
         </div>
     );
 };

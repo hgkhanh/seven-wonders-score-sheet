@@ -5,6 +5,7 @@
   "homepage": "/seven",
   "dependencies": {
     "@material-ui/core": "^4.4.3",
+    "@material-ui/icons": "^4.4.3",
     "animate.css": "^3.7.2",
     "firebase": "^6.6.2",
     "node-sass": "^4.12.0",

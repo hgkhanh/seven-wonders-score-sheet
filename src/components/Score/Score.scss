@@ -3,35 +3,80 @@ body {
     padding: 10px;
 }
 
+.content {
+    height: 80vh;
+    width: 100vw;
+    text-align: center;
+}
+
+.titleHeader {
+
+    h1,
+    p {
+        margin: 5px;
+    }
+
+    p {
+        font-weight: normal;
+    }
+}
+
 table {
     border-collapse: collapse;
-    height: 100vh;
+    height: 100%;
+    margin: 0 auto;
+
+    thead tr th {
+        border-bottom: 1px solid #aaa;
+
+        &:last-child {
+            border: none;
+        }
+    }
+
+    tbody tr:last-child {
+        border-top: 1px solid #aaa;
+    }
+
+    th {
+        font-weight: bold;
+    }
 
     td {
         padding: 5px;
     }
+
+    .inputCell,
+    .playerName {
+        position: relative;
+        font-weight: bold;
+        text-align: center;
+
+        input,
+        span {
+            width: 100%;
+            border: none;
+            text-align: center;
+            outline: none;
+            background: transparent;
+            font-size: 20px;
+            max-width: 108px;
+        }
+    }
 }
 
-input {
-    width: 100%;
+.playerName:hover {
+    .btnRemove {
+        display: block;
+    }
 }
 
 .btnRemove {
+    display: none;
     position: absolute;
-    top: 7px;
+    top: 0;
     right: 0;
-}
-
-.inputCell, .playerName {
-    position: relative;
-    font-weight: bold;
-    text-align: center;
-    input, span {
-        border: none;
-        text-align: center;
-        outline: none;
-        background: transparent;
-        font-size: 20px;
-        max-width: 108px;
-    }
+    background: none;
+    border: none;
+    cursor: pointer;
 }

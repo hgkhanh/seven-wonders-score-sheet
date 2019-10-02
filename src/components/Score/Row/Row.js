@@ -9,13 +9,13 @@ const Row = (props) => {
     let {
         pointIndex,
         name,
-        color,
         card,
         data,
         readOnly,
         dispatch
     } = props;
 
+    let color = props.color || '#000000';
     const handlePointChange = (event, playerId, columnIndex) => {
 
         dispatch(
@@ -35,12 +35,20 @@ const Row = (props) => {
         }
     }
 
-    const styleRow = {
-        backgroundColor: `${color}AA`,
+    const background = {
+        backgroundColor: color + 'AA'
     }
 
-    const styleIcon = {
-        backgroundColor: `${color}`,
+    const fadedBg = {
+        backgroundColor: color + '44'
+    }
+
+    const veryFadedBg = {
+        backgroundColor: color + '22'
+    }
+
+    const originalColor = {
+        backgroundColor: color,
     }
 
     const imageSrc = {
@@ -51,27 +59,35 @@ const Row = (props) => {
     }
 
     let iconDiv;
+    // There are 3 type of row Header
     if (card) {
-        iconDiv = <div className='icon card' style={styleIcon}></div>
+        // Header with card image
+        iconDiv = <div className='icon card' style={originalColor}></div>
     } else {
         if (imageSrc[name]) {
+            // Header with icon svg
             iconDiv = <img className='icon' src={imageSrc[name]} alt={name} />
         } else {
-            iconDiv = <div className='icon text' style={styleIcon}>{name}</div>
+            // Header with text
+            iconDiv = <div className='icon text' style={originalColor}>{name}</div>
         }
     }
 
     return (
         <tr>
-            <td className={`rowHeader ${name}`} style={styleRow}>
+            {/* If row is readOnly (e.g: Total row) show original color for header */}
+            <td className={`rowHeader ${name}`} style={ readOnly ? originalColor : background}>
                 {iconDiv}
             </td>
+            {/* If row is readOnly (e.g: Total row), use <span> */}
             {data.map((point, playerIndex) => readOnly ? (
-                <td className="inputCell" key={`point-${playerIndex}-${[pointIndex]}`}>
+                <td className="inputCell" key={`point-${playerIndex}-${[pointIndex]}`}
+                    style={parseInt(playerIndex) % 2 === 0 ? veryFadedBg : fadedBg}>
                     <span>{point}</span>
                 </td>
             ) : (
-                    <td className="inputCell" key={`point-${playerIndex}-${[pointIndex]}`}>
+                    <td className="inputCell" key={`point-${playerIndex}-${[pointIndex]}`} 
+                        style={parseInt(playerIndex) % 2 === 0 ? veryFadedBg : fadedBg}>
                         <input type="text" value={point} onChange={(event) => handlePointChange(event, playerIndex, pointIndex)}
                             onKeyPress={(event) => filterInput(event)} />
                     </td>
