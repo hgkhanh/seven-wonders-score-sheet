@@ -1,6 +1,16 @@
 body {
     margin: 10px;
     padding: 10px;
+
+    .container {
+        text-align: center;
+    }
+}
+
+.lineBreak {
+    border-top: 1px solid #cccccc;
+    width: 100%;
+    margin: 10px 0;
 }
 
 input {
@@ -10,4 +20,28 @@ input {
 button a {
     text-decoration: none;
     color: #000;
+}
+
+.roomInputContainer {
+    position: relative;
+
+    .overlayInput {
+        position: absolute;
+        top: 0;
+        transform: translate(-50%, 0);
+        opacity: 0;
+
+        input {
+            text-align: left;
+        }
+    }
+
+    .inputFocused fieldset {
+        border-color: #3f51b5;
+        border-width: 2px;
+    }
+
+    input {
+        text-align: center;
+    }
 }

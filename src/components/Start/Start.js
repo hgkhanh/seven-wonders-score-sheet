@@ -6,11 +6,14 @@ import 'firebase/firestore';
 import { FirebaseContext } from 'components/Firebase/context';
 // import * as utils from 'utils';
 import blankGame from 'config/Game';
+import { Container, Button, TextField, withStyles } from '@material-ui/core';
 
 const Start = () => {
     const firebase = useContext(FirebaseContext);
     const [code, setCode] = useState('');
+    const [inputFocused, setInputFocus] = useState(false);
     const [roomList, setRoomList] = useState([]);
+    let overlayInputRef = React.createRef();
     /**
      * Get list of game room
      */
@@ -32,6 +35,7 @@ const Start = () => {
     const JoinGame = withRouter(
         ({ history }) => {
             const handleJoin = () => {
+                setInputFocus(false);
                 // find room in db
                 if (isCodeValid(code)) {
                     console.log('Entering Room: ' + code);
@@ -79,7 +83,10 @@ const Start = () => {
                 }
             }
             return (
-                <button onClick={handleJoin}>Join</button>
+                <Button type='submit' variant='contained' color='primary'
+                    fullWidth onClick={handleJoin}>
+                    Join
+                </Button>
             )
         }
     );
@@ -103,7 +110,10 @@ const Start = () => {
                     });
             }
             return (
-                <button onClick={handleCreate}>Create</button>
+                <Button type='submit' variant='contained' color='secondary'
+                    fullWidth onClick={handleCreate}>
+                    Create
+                </Button>
             )
         }
     );
@@ -115,6 +125,10 @@ const Start = () => {
         if (!regexChar.test(event.key)) {
             event.preventDefault();
         }
+    }
+
+    const handleFocus = function (event) {
+        setInputFocus(true);
     }
 
     // 
@@ -139,19 +153,58 @@ const Start = () => {
         return regexCode.test(code)
     }
 
+    const digitInput = (index) => {
+        console.log(inputFocused);
+        const StyledTextField = withStyles({
+            root: {
+                margin: '10px'
+            }
+        })(TextField);
+        return (
+            <StyledTextField key={index}
+                className={inputFocused ? 'inputFocused' : ''}
+                variant='outlined'
+                margin='normal'
+                value={code.length > index ? code[index] : ''}
+                id={`digitInput${index}`}
+                inputProps={{ size: '1' }}
+            />
+        )
+    }
+
+    const overlayInputProps = {
+        type: 'tel',
+        pattern: '[0-9]*',
+        maxLength: '4',
+    }
     return (
         <div className='start'>
-            <h3>Join Game</h3>
-            <p>Insert your room code</p>
-            <input type='tel' pattern='[0-9]*' maxLength='4'
-                onChange={(event) => setCode(event.target.value)}
-                onKeyPress={(event) => handleCodeInput(event)}></input>
-            <br />
-            <JoinGame />
-            <br />
-            <h3>Create Game</h3>
-            <p>Create a new game</p>
-            <CreateGame />
+            <Container className='container' component='div' maxWidth='xs'>
+                <h3>Join Game</h3>
+                <p>Insert your room code</p>
+                <div className='roomInputContainer'>
+                    {[0, 1, 2, 3].map((index) => digitInput(index))}
+                    <br />
+                    <TextField
+                        className='overlayInput'
+                        variant='outlined'
+                        margin='normal'
+                        name='roomCode'
+                        autoFocus
+                        autoComplete='off'
+                        fullWidth
+                        inputProps={overlayInputProps}
+                        onChange={(event) => setCode(event.target.value)}
+                        onKeyPress={(event) => handleCodeInput(event)}
+                        onFocus={(event) => handleFocus(event)}
+                    />
+                </div>
+                <JoinGame />
+                <div className='lineBreak' />
+                <h3>Create Game</h3>
+                <p>Start a new game</p>
+                <CreateGame />
+            </Container>
         </div>
     );
 };
