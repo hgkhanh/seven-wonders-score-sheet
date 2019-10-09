@@ -3,6 +3,8 @@ body {
     padding: 10px;
 }
 
+@media screen and (max-height:3px) {}
+
 .content {
     height: 80vh;
     width: 100vw;
@@ -10,6 +12,7 @@ body {
 }
 
 .titleHeader {
+    height: 10vh;
 
     h1,
     p {
@@ -45,23 +48,21 @@ table {
     td {
         padding: 5px;
     }
+}
 
-    .inputCell,
-    .playerName {
-        position: relative;
-        font-weight: bold;
+.cell {
+    position: relative;
+    font-weight: bold;
+    text-align: center;
+
+    input,
+    span {
+        border: none;
         text-align: center;
-
-        input,
-        span {
-            width: 100%;
-            border: none;
-            text-align: center;
-            outline: none;
-            background: transparent;
-            font-size: 20px;
-            max-width: 108px;
-        }
+        outline: none;
+        background: transparent;
+        font-size: 20px;
+        max-width: 3.5em;
     }
 }
 
@@ -71,12 +72,20 @@ table {
     }
 }
 
-.btnRemove {
-    display: none;
-    position: absolute;
-    top: 0;
-    right: 0;
+.iconBtn {
     background: none;
     border: none;
     cursor: pointer;
+
+    &.remove {
+        display: none;
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+}
+
+.footer {
+    height: 10vh;
+    margin: 10px 0;
 }

@@ -76,19 +76,19 @@ const Row = (props) => {
     return (
         <tr>
             {/* If row is readOnly (e.g: Total row) show original color for header */}
-            <td className={`rowHeader ${name}`} style={ readOnly ? originalColor : background}>
+            <td className={`cell header ${name}`} style={ readOnly ? originalColor : background}>
                 {iconDiv}
             </td>
             {/* If row is readOnly (e.g: Total row), use <span> */}
             {data.map((point, playerIndex) => readOnly ? (
-                <td className="inputCell" key={`point-${playerIndex}-${[pointIndex]}`}
+                <td className='cell' key={`point-${playerIndex}-${[pointIndex]}`}
                     style={parseInt(playerIndex) % 2 === 0 ? veryFadedBg : fadedBg}>
                     <span>{point}</span>
                 </td>
             ) : (
-                    <td className="inputCell" key={`point-${playerIndex}-${[pointIndex]}`} 
+                    <td className='cell' key={`point-${playerIndex}-${[pointIndex]}`} 
                         style={parseInt(playerIndex) % 2 === 0 ? veryFadedBg : fadedBg}>
-                        <input type="text" value={point} onChange={(event) => handlePointChange(event, playerIndex, pointIndex)}
+                        <input type='text' value={point} onChange={(event) => handlePointChange(event, playerIndex, pointIndex)}
                             onKeyPress={(event) => filterInput(event)} />
                     </td>
                 ))

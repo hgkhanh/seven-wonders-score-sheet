@@ -157,7 +157,8 @@ const Start = () => {
         console.log(inputFocused);
         const StyledTextField = withStyles({
             root: {
-                margin: '10px'
+                marginLeft: '10px',
+                marginRight: '10px'
             }
         })(TextField);
         return (
@@ -167,7 +168,7 @@ const Start = () => {
                 margin='normal'
                 value={code.length > index ? code[index] : ''}
                 id={`digitInput${index}`}
-                inputProps={{ size: '1' }}
+                inputProps={{ size: '2' }}
             />
         )
     }

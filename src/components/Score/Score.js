@@ -8,8 +8,8 @@ import * as utils from 'utils';
 import { store } from 'react-notifications-component';
 import { BrowserRouter as Route, Link } from "react-router-dom";
 import Start from '../Start';
-import { RemoveCircleTwoTone } from '@material-ui/icons';
-
+import { RemoveCircleTwoTone, PersonAdd } from '@material-ui/icons';
+import { Button } from '@material-ui/core';
 const Scoresheet = ({ match }) => {
     const firebase = useContext(FirebaseContext);
     const gameId = 'iXRn0QvcMD5rxIk9bxcX';
@@ -98,6 +98,19 @@ const Scoresheet = ({ match }) => {
             })
             .catch(error => {
                 console.log(error);
+                store.addNotification({
+                    title: 'Something wrong!',
+                    message: 'Error: ' + error,
+                    type: 'danger',
+                    insert: 'top',
+                    container: 'top-right',
+                    animationIn: ['animated', 'fadeIn', 'faster'],
+                    animationOut: ['animated', 'fadeOut', 'fast'],
+                    dismiss: {
+                        duration: 2000
+                    },
+                    width: 300
+                });
             });
     };
 
@@ -200,9 +213,9 @@ const Scoresheet = ({ match }) => {
      * RENDER FUNCTIONS
      */
     const renderPlayerName = (player, playerId) => (
-        <th key={`player-${playerId}`} className='playerName'>
+        <th key={`player-${playerId}`} className={`cell playerName`}>
             <input type='text' value={player.name} onChange={(event) => handleNameChange(event, playerId)} />
-            <button className='btnRemove' onClick={() => handleRemovePlayer(playerId)}>
+            <button className='iconBtn remove' onClick={() => handleRemovePlayer(playerId)}>
                 <RemoveCircleTwoTone color="error" />
             </button>
         </th>
@@ -255,7 +268,7 @@ const Scoresheet = ({ match }) => {
                         <tr>
                             <th></th>
                             {players.map((player, playerId) => renderPlayerName(player, playerId))}
-                            <th><button onClick={addPlayer}>Add Player</button></th>
+                            <th><button className='iconBtn' onClick={addPlayer}><PersonAdd /></button></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -263,9 +276,12 @@ const Scoresheet = ({ match }) => {
                         {renderRowTotal()}
                     </tbody>
                 </table>
-
-                <button onClick={saveScore}>Save score</button>
-
+                <div className='footer'>
+                    <Button type='submit' variant='contained'
+                        onClick={saveScore}>
+                        Save score
+                    </Button>
+                </div>
                 <Route exact path="/start" component={Start} />
             </div>
         </div>
