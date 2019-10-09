@@ -11,13 +11,17 @@ import Start from '../Start';
 import { RemoveCircleTwoTone, PersonAdd } from '@material-ui/icons';
 import { Button } from '@material-ui/core';
 const Scoresheet = ({ match }) => {
+    // Role is Room master (can edit) or Player (can view)
+    const masterMode = match && match.params && match.params.gameId;
     const firebase = useContext(FirebaseContext);
-    const gameId = 'iXRn0QvcMD5rxIk9bxcX';
+    const db = firebase.firestore();
+    // const gameId = 'iXRn0QvcMD5rxIk9bxcX';
     const blankPlayer = {
-        name: '',
-        score: []
+        name: 'p1',
+        score: [0,0,0,0,0,0,0,0,0,0]
     };
     const [room, setRoom] = useState('');
+    const [gameId, setGameId] = useState('');
     // Lobby: rooms currently in play
     const [lobby, updateLobby] = useState([]);
     const [isError, setError] = useState(false);
@@ -69,7 +73,6 @@ const Scoresheet = ({ match }) => {
     };
 
     const saveScore = () => {
-        const db = firebase.firestore();
         const documentRef = db.collection('game').doc(gameId);
         documentRef.set(
             {
@@ -122,74 +125,98 @@ const Scoresheet = ({ match }) => {
      * Only run once when Component mount
      */
     useEffect(() => {
-        const db = firebase.firestore();
-        // if (match && match.params && match.params.id) {
-        //     setRoom(match.params.id);
-        // }
-
-        // Get game by id
-        const gameDocRef = db.collection('game').doc(match.params.id);
-        gameDocRef.get()
-            .then((document) => {
-                if (document.exists) {
-                    // If game do not have a room code
-                    // Generate room code
-                    if (document.data().room === '') {
-                        const lobbyDocRef = db.collection('lobby').doc('list');
-
-                        // Get room list from lobby
-                        lobbyDocRef.get()
-                            .then(document => {
-                                if (document.exists) {
-                                    // After getting lobby
-                                    const snapShotLobby = document.data().room;
-                                    updateLobby(snapShotLobby);
-                                    const roomCode = utils.generateRoomCode(4, snapShotLobby);
-                                    setRoom(roomCode);
-                                    // Update room code in game object
-                                    gameDocRef.set(
-                                        {
-                                            room: roomCode
-                                        },
-                                        {
-                                            merge: true
-                                        }
-                                    );
-                                    // Update room code in lobby list
-                                    lobbyDocRef.set(
-                                        {
-                                            room: [...snapShotLobby, roomCode]
-                                        }
-                                    )
-                                } else {
-                                    console.log('Lobby list not found!');
-                                }
-                            });
-                    } else {
-                        // If game have a room code
-                        // Fetch all game with the same room code
-                        setRoom(document.data().room);
-                    }
+        // Room Master (game/:gameId)
+        if (masterMode) {
+            setGameId(match.params.gameId);
+            getGameById(match.params.gameId);
+        }
+        // Player (room/:roomCode)
+        else {
+            setRoom(match.params.roomCode);
+            // Fetch all game with the same room code
+            db.collection('game').where('room', '==', match.params.roomCode).orderBy('time', 'desc')
+                .get()
+                .then((querySnapshot) => {
+                    querySnapshot.forEach((document) => {
+                        console.log(document.id, " => ", document.data());
+                    });
                     // Display game data
+                    console.log(querySnapshot.docs[0]);
                     dispatch(
                         {
                             type: 'setPoints',
-                            players: document.data().players
+                            players: querySnapshot.docs[0].data().players
                         }
-                    )
-                } else {
-                    console.log('No such document id');
+                    );
+                    setLoading(false);
+                })
+                .catch((error) => {
+                    console.log('Error getting document: ', error);
                     setError(true);
+                    setLoading(false);
+                });
+        }
+    }, []);
+
+
+    // HANDLER FUNCTIONS
+
+    // fetch game from database, create roomCode 
+    const getGameById = (id) => {
+        const gameDocRef = db.collection('game').doc(id);
+        gameDocRef.get()
+            .then((document) => {
+                // If game do not have a room code
+                // Generate room code then update in game object and lobby list
+                if (document.data().room === '') {
+                    const lobbyDocRef = db.collection('lobby').doc('list');
+
+                    // Get room list from lobby
+                    lobbyDocRef.get()
+                        .then(document => {
+                            if (document.exists) {
+                                // After getting lobby
+                                const snapShotLobby = document.data().room;
+                                updateLobby(snapShotLobby);
+                                const roomCode = utils.generateRoomCode(4, snapShotLobby);
+                                setRoom(roomCode);
+                                // Update room code in game object
+                                gameDocRef.set(
+                                    {
+                                        room: roomCode
+                                    },
+                                    {
+                                        merge: true
+                                    }
+                                );
+                                // Update room code in lobby list
+                                lobbyDocRef.set(
+                                    {
+                                        room: [...snapShotLobby, roomCode]
+                                    }
+                                )
+                            } else {
+                                console.log('Lobby list not found!');
+                            }
+                        });
+                } else {
+                    // If game have a room code
+                    setRoom(document.data().room);
                 }
+                // Display game data
+                dispatch(
+                    {
+                        type: 'setPoints',
+                        players: document.data().players
+                    }
+                )
                 setLoading(false);
             }).catch((error) => {
                 console.log('Error getting document: ', error);
                 setError(true);
                 setLoading(false);
             });
-    }, []);
-
-    // Handler functions
+    }
     const handleNameChange = (event, playerId) => {
         dispatch(
             {
@@ -212,14 +239,26 @@ const Scoresheet = ({ match }) => {
     /**
      * RENDER FUNCTIONS
      */
-    const renderPlayerName = (player, playerId) => (
-        <th key={`player-${playerId}`} className={`cell playerName`}>
-            <input type='text' value={player.name} onChange={(event) => handleNameChange(event, playerId)} />
-            <button className='iconBtn remove' onClick={() => handleRemovePlayer(playerId)}>
-                <RemoveCircleTwoTone color="error" />
-            </button>
-        </th>
-    );
+    const renderPlayerName = (player, playerId) => {
+        if (masterMode) {
+            return (
+                <th key={`player-${playerId}`} className={`cell playerName`}>
+                    <input type='text' value={player.name} 
+                        onChange={(event) => handleNameChange(event, playerId)} />
+                    <button className='iconBtn remove' onClick={() => handleRemovePlayer(playerId)}>
+                        <RemoveCircleTwoTone color="error" />
+                    </button>
+                </th>
+            )
+        } else {
+            return (
+                <th key={`player-${playerId}`} className={`cell playerName`}>
+                    <input type='text' value={player.name} 
+                        disabled />
+                </th>
+            )
+        }
+    };
 
     // A row show score in one category - identified by categoryIndex
     const renderRow = (category, categoryIndex) => {
@@ -227,7 +266,8 @@ const Scoresheet = ({ match }) => {
         const data = players.map(player => player.score[categoryIndex]);
         return (
             <Row key={category.name} pointIndex={categoryIndex} name={category.name}
-                color={category.color} card={category.card} data={data} dispatch={dispatch} />
+                color={category.color} card={category.card} data={data} dispatch={dispatch}
+                readOnly={!masterMode} />
         );
     };
 
@@ -241,7 +281,7 @@ const Scoresheet = ({ match }) => {
             }, 0);
         });
         return (
-            <Row name='Σ' data={data} readOnly={true} />
+            <Row name='Σ' data={data} readOnly={true} totalRow={true} />
         );
     };
 
@@ -268,7 +308,9 @@ const Scoresheet = ({ match }) => {
                         <tr>
                             <th></th>
                             {players.map((player, playerId) => renderPlayerName(player, playerId))}
-                            <th><button className='iconBtn' onClick={addPlayer}><PersonAdd /></button></th>
+                            {masterMode &&
+                                (<th><button className='iconBtn' onClick={addPlayer}><PersonAdd /></button></th>)
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -277,10 +319,12 @@ const Scoresheet = ({ match }) => {
                     </tbody>
                 </table>
                 <div className='footer'>
-                    <Button type='submit' variant='contained'
-                        onClick={saveScore}>
-                        Save score
-                    </Button>
+                    {masterMode &&
+                        (<Button type='submit' variant='contained'
+                            onClick={saveScore}>
+                            Save score
+                    </Button>)
+                    }
                 </div>
                 <Route exact path="/start" component={Start} />
             </div>

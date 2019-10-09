@@ -46,8 +46,8 @@ const Start = () => {
                             const game = querySnapshot.docs[0];
                             console.log('findRoomByCode result');
                             console.log(game.data());
-                            console.log(`Navigating to game room: /game/${game.id}`);
-                            history.push(`/game/${game.id}`);
+                            console.log(`Navigating to game room: ${code}`);
+                            history.push(`/room/${code}`);
                         } else {
                             console.log(`Room ${code} not found!`);
                             store.addNotification({

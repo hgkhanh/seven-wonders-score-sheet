@@ -16,7 +16,8 @@ ReactDOM.render(
         <ReactNotification />
         <Router basename={process.env.PUBLIC_URL}>
             <Switch>
-                <Route path="/game/:id" component={Score} />
+                <Route path="/game/:gameId" component={Score} />
+                <Route path="/room/:roomCode" component={Score} />
                 <Route path="/" exact component={Start} />
                 <Route render={() => <h3>404</h3>} />
             </Switch>

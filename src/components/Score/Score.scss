@@ -1,14 +1,12 @@
 body {
     margin: 10px;
     padding: 10px;
-}
 
-@media screen and (max-height:3px) {}
-
-.content {
-    height: 80vh;
-    width: 100vw;
-    text-align: center;
+    .content {
+        height: 80vh;
+        width: 100vw;
+        text-align: center;
+    }
 }
 
 .titleHeader {
@@ -52,11 +50,11 @@ table {
 
 .cell {
     position: relative;
-    font-weight: bold;
     text-align: center;
 
     input,
     span {
+        font-weight: 400;
         border: none;
         text-align: center;
         outline: none;
@@ -64,10 +62,18 @@ table {
         font-size: 20px;
         max-width: 3.5em;
     }
+
+    input:disabled {
+        color: #000;
+    }
+}
+
+.total .cell span {
+    font-weight: bold;
 }
 
 .playerName:hover {
-    .btnRemove {
+    .iconBtn.remove {
         display: block;
     }
 }
@@ -80,8 +86,11 @@ table {
     &.remove {
         display: none;
         position: absolute;
-        top: 0;
-        right: 0;
+        top: -2em;
+        transform: translate(50%, 0);
+        left: 25%;
+        margin: 0;
+        padding: 0;
     }
 }
 
